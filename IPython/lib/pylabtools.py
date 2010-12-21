@@ -68,22 +68,16 @@ def activate_matplotlib(backend):
     """Activate the given backend and set interactive to True."""
 
     import matplotlib
-    if backend.startswith('module://'):
-        # Work around bug in matplotlib: matplotlib.use converts the
-        # backend_id to lowercase even if a module name is specified!
-        matplotlib.rcParams['backend'] = backend
-    else:
-        matplotlib.use(backend)
+
     matplotlib.interactive(True)
+    matplotlib.rcParams['backend'] = backend
 
     # This must be imported last in the matplotlib series, after
     # backend/interactivity choices have been made
     import matplotlib.pylab as pylab
+    import matplotlib.pyplot
 
-    # XXX For now leave this commented out, but depending on discussions with
-    # mpl-dev, we may be able to allow interactive switching...
-    #import matplotlib.pyplot
-    #matplotlib.pyplot.switch_backend(backend)
+    matplotlib.pyplot.switch_backend(backend)
 
     pylab.show._needmain = False
     # We need to detect at runtime whether show() is called by the user.
@@ -91,22 +85,31 @@ def activate_matplotlib(backend):
     pylab.draw_if_interactive = flag_calls(pylab.draw_if_interactive)
 
 
-def import_pylab(user_ns, backend, import_all=True, shell=None):
-    """Import the standard pylab symbols into user_ns."""
+def guimode(shell, backend):
+    activate_matplotlib(backend)
+    from IPython.zmq.pylab.backend_inline import flush_svg, figsize
+    user_ns = shell.user_ns
 
-    # Import numpy as np/pyplot as plt are conventions we're trying to
-    # somewhat standardize on.  Making them available to users by default
-    # will greatly help this.
-    s = ("import numpy\n"
-          "import matplotlib\n"
-          "from matplotlib import pylab, mlab, pyplot\n"
-          "np = numpy\n"
-          "plt = pyplot\n"
-          )
-    exec s in user_ns
+    if backend == backends['inline']:
+        from matplotlib import pyplot
+        shell.register_post_execute(flush_svg)
+        # The typical default figure size is too large for inline use.  We
+        # might make this a user-configurable parameter later.
+        figsize(6.0, 4.0)
+        # Add 'figsize' to pyplot and to the user's namespace
+        user_ns['figsize'] = pyplot.figsize = figsize
+        shell.user_ns_hidden['figsize'] = figsize
+    else:
+        from IPython.zmq.pylab.backend_inline import pastefig
+        from matplotlib import pyplot
+        # Add 'paste' to pyplot and to the user's namespace
+        user_ns['pastefig'] = pyplot.pastefig = pastefig
+        try:
+            shell._post_execute.remove(flush_svg)
+        except KeyError:
+            pass
 
-    if shell is not None:
-        exec s in shell.user_ns_hidden
+def import_pylab(user_ns, ba\dden
         # If using our svg payload backend, register the post-execution
         # function that will pick up the results for display.  This can only be
         # done with access to the real shell object.
@@ -205,4 +208,3 @@ def mpl_runner(safe_execfile):
             pylab.draw_if_interactive.called = False
 
     return mpl_execfile
-
