@@ -32,6 +32,7 @@ var IPython = (function (IPython) {
             indentUnit : 4,
             mode: this.code_mirror_mode,
             theme: 'default',
+            keyMap: 'emacs',
             value: this.placeholder,
             readOnly: this.read_only,
             onKeyEvent: $.proxy(this.handle_codemirror_keyevent,this)
