@@ -396,6 +396,10 @@ class InteractiveShell(SingletonConfigurable, Magic):
     # Private interface
     _post_execute = Instance(dict)
 
+    # The %pylab call can change the state of pylab
+    _pylab_backend = None
+    _pylab_gui = None
+
     def __init__(self, config=None, ipython_dir=None, profile_dir=None,
                  user_module=None, user_ns=None,
                  custom_exceptions=((), None)):

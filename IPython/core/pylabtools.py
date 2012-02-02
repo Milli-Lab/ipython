@@ -210,22 +210,23 @@ def activate_matplotlib(backend):
     """Activate the given backend and set interactive to True."""
 
     import matplotlib
-    if backend.startswith('module://'):
-        # Work around bug in matplotlib: matplotlib.use converts the
-        # backend_id to lowercase even if a module name is specified!
-        matplotlib.rcParams['backend'] = backend
-    else:
-        matplotlib.use(backend)
+    ## if backend.startswith('module://'):
+    ##     # Work around bug in matplotlib: matplotlib.use converts the
+    ##     # backend_id to lowercase even if a module name is specified!
+    ##     matplotlib.rcParams['backend'] = backend
+    ## else:
+    ##     matplotlib.use(backend)
     matplotlib.interactive(True)
-
+    matplotlib.rcParams['backend'] = backend
+    
     # This must be imported last in the matplotlib series, after
     # backend/interactivity choices have been made
     import matplotlib.pylab as pylab
 
     # XXX For now leave this commented out, but depending on discussions with
     # mpl-dev, we may be able to allow interactive switching...
-    #import matplotlib.pyplot
-    #matplotlib.pyplot.switch_backend(backend)
+    import matplotlib.pyplot
+    matplotlib.pyplot.switch_backend(backend)
 
     pylab.show._needmain = False
     # We need to detect at runtime whether show() is called by the user.
@@ -328,7 +329,9 @@ def pylab_activate(user_ns, gui=None, import_all=True, shell=None):
     """
     gui, backend = find_gui_and_backend(gui)
     activate_matplotlib(backend)
-    import_pylab(user_ns, import_all)
+    # Only call the imports 
+    if shell._pylab_backend is None:
+        import_pylab(user_ns, import_all)
     if shell is not None:
         configure_inline_support(shell, backend, user_ns)
         
