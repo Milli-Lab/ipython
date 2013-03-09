@@ -1,5 +1,8 @@
 // TODO number prefixes
+console.log("Emacs keybindings read"); // dbg
 (function() {
+
+    console.log("Starting emacs keybindings"); // dbg
   // Really primitive kill-ring implementation.
   var killRing = [];
   function addToRing(str) {

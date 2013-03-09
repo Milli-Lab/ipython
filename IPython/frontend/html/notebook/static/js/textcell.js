@@ -55,6 +55,7 @@ var IPython = (function (IPython) {
             theme: 'default',
             value: this.placeholder,
             lineWrapping : true,
+            keyMap : 'emacs',
         }
 
 
